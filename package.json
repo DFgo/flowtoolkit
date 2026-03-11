@@ -1,0 +1,64 @@
+{
+  "name": "flowtoolkit",
+  "version": "2.0.0",
+  "description": "OA系统前端工具库 - 提供水印、多语言、工具函数等常用功能",
+  "type": "module",
+  "main": "dist/flowtoolkit.umd.js",
+  "module": "dist/flowtoolkit.es.js",
+  "unpkg": "dist/flowtoolkit.umd.js",
+  "jsdelivr": "dist/flowtoolkit.umd.js",
+  "exports": {
+    ".": {
+      "import": "./dist/flowtoolkit.es.js",
+      "require": "./dist/flowtoolkit.cjs.js"
+    },
+    "./watermark": "./dist/modules/watermark.js",
+    "./language": "./dist/modules/language.js",
+    "./utils": "./dist/modules/utils.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "build:browser": "vite build --config vite.config.browser.js",
+    "build:all": "npm run build && npm run build:browser",
+    "build:watch": "vite build --watch",
+    "preview": "vite preview",
+    "lint": "eslint src --ext .js",
+    "lint:fix": "eslint src --fix --quiet",
+    "format": "prettier --write \"src/**/*.js\"",
+    "format:check": "prettier --check \"src/**/*.js\"",
+    "clean": "rm -rf dist dist-browser"
+  },
+  "keywords": [
+    "oa",
+    "watermark",
+    "i18n",
+    "internationalization",
+    "utilities",
+    "office-automation"
+  ],
+  "author": "",
+  "contributors": [],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "bugs": {
+    "url": ""
+  },
+  "homepage": "",
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "devDependencies": {
+    "vite": "^5.4.0",
+    "eslint": "^8.57.0",
+    "prettier": "^3.3.0",
+    "eslint-config-prettier": "^9.1.0"
+  }
+}

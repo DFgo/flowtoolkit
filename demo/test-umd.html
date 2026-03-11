@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FlowToolkit 测试 - UMD</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 20px;
+      max-width: 1400px;
+      margin: 0 auto;
+      background: #f0f2f5;
+      color: #333;
+    }
+    h1 { color: #2563eb; padding-bottom: 10px; margin-bottom: 20px; }
+    h2 { color: #1e40af; margin: 30px 0 15px; padding-left: 12px; border-left: 4px solid #2563eb; }
+    h3 { color: #334155; margin-bottom: 15px; font-size: 14px; }
+
+    .test-section {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .form-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .form-group label {
+      font-size: 12px;
+      color: #666;
+      font-weight: 500;
+    }
+
+    .form-group input, .form-group select {
+      padding: 8px 12px;
+      border: 1px solid #d9d9d9;
+      border-radius: 4px;
+      font-size: 14px;
+      min-width: 150px;
+    }
+
+    .form-group input:focus, .form-group select:focus {
+      outline: none;
+      border-color: #40a9ff;
+      box-shadow: 0 0 0 2px rgba(24,144,255,0.1);
+    }
+
+    .checkbox-group {
+      flex-direction: row !important;
+      align-items: center;
+      gap: 8px !important;
+    }
+
+    .checkbox-group input {
+      min-width: auto !important;
+      width: 18px;
+      height: 18px;
+    }
+
+    button {
+      background: #1890ff;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+      margin-right: 8px;
+      margin-bottom: 8px;
+    }
+
+    button:hover { background: #40a9ff; }
+    button:active { background: #096dd9; }
+
+    button.danger { background: #ff4d4f; }
+    button.danger:hover { background: #ff7875; }
+
+    button.success { background: #52c41a; }
+    button.success:hover { background: #73d13d; }
+
+    button.warning { background: #faad14; }
+    button.warning:hover { background: #ffc53d; }
+
+    button:disabled {
+      background: #d9d9d9;
+      cursor: not-allowed;
+    }
+
+    .result {
+      background: #f7f8fa;
+      border: 1px solid #e8e8e8;
+      padding: 12px;
+      border-radius: 4px;
+      margin-top: 15px;
+      font-family: 'Consolas', monospace;
+      font-size: 13px;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    #log {
+      max-height: 300px;
+      overflow-y: auto;
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 15px;
+      border-radius: 4px;
+      font-family: 'Consolas', monospace;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .params-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .params-table th, .params-table td {
+      border: 1px solid #e8e8e8;
+      padding: 8px 12px;
+      text-align: left;
+    }
+
+    .params-table th {
+      background: #fafafa;
+      font-weight: 500;
+      width: 150px;
+    }
+
+    .params-table tr:hover {
+      background: #f5f5f5;
+    }
+
+    .color-preview {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+      vertical-align: middle;
+      margin-left: 8px;
+    }
+
+    .tabs {
+      display: flex;
+      border-bottom: 2px solid #e8e8e8;
+      margin-bottom: 20px;
+    }
+
+    .tab {
+      padding: 10px 20px;
+      cursor: pointer;
+      border: none;
+      background: none;
+      font-size: 14px;
+      color: #666;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+    }
+
+    .tab.active {
+      color: #1890ff;
+      border-bottom-color: #1890ff;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .i18n-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-size: 12px;
+      margin-right: 5px;
+    }
+
+    .i18n-badge.active {
+      background: #1890ff;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <h1>FlowToolkit 测试页面</h1>
+
+  <!-- 引入 UMD 构建 -->
+  <script src="../dist/flowtoolkit.umd.js"></script>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('watermark')">Watermark 水印</button>
+    <button class="tab" onclick="switchTab('i18n')">i18n 国际化</button>
+    <button class="tab" onclick="switchTab('utils')">Utils 工具</button>
+  </div>
+
+  <!-- Watermark 测试 -->
+  <div id="watermark" class="tab-content active">
+    <div class="test-section">
+      <h3>基础参数</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>水印内容 (content)</label>
+          <input type="text" id="wm-content" value="OA系统 机密文件">
+        </div>
+        <div class="form-group">
+          <label>字体颜色 (fontColor)</label>
+          <input type="text" id="wm-fontColor" value="#000000">
+        </div>
+        <div class="form-group">
+          <label>透明度 (globalAlpha)</label>
+          <input type="number" id="wm-globalAlpha" value="0.3" step="0.1" min="0" max="1">
+        </div>
+        <div class="form-group">
+          <label>字号 (fontSize)</label>
+          <input type="text" id="wm-fontSize" value="16px">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>宽度 (width)</label>
+          <input type="number" id="wm-width" value="300">
+        </div>
+        <div class="form-group">
+          <label>高度 (height)</label>
+          <input type="number" id="wm-height" value="200">
+        </div>
+        <div class="form-group">
+          <label>旋转角度 (rotate)</label>
+          <input type="number" id="wm-rotate" value="-30">
+        </div>
+        <div class="form-group">
+          <label>字体 (fontFamily)</label>
+          <select id="wm-fontFamily">
+            <option value="sans-serif">sans-serif</option>
+            <option value="serif">serif</option>
+            <option value="monospace">monospace</option>
+            <option value="Microsoft YaHei">微软雅黑</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group checkbox-group">
+          <input type="checkbox" id="wm-protect">
+          <label>防篡改保护 (protect)</label>
+        </div>
+        <div class="form-group checkbox-group">
+          <input type="checkbox" id="wm-updateOnResize" checked>
+          <label>窗口变化时更新 (updateOnResize)</label>
+        </div>
+        <div class="form-group checkbox-group">
+          <input type="checkbox" id="wm-isCheckPrint">
+          <label>检测打印 (isCheckPrint)</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="test-section">
+      <h3>操作</h3>
+      <button onclick="createWatermark()">创建水印</button>
+      <button class="success" onclick="updateWatermark()">更新水印</button>
+      <button class="danger" onclick="destroyWatermark()">销毁水印</button>
+      <button class="warning" onclick="recoverWatermark()">恢复水印</button>
+      <button onclick="getOptions()">获取配置</button>
+      <button onclick="getStatus()">状态检查</button>
+    </div>
+
+    <div class="test-section">
+      <h3>密码保护</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>密码验证URL</label>
+          <input type="text" id="wm-passwordVerifyUrl" value="assd.t_00.ft_watermark" style="width: 300px;">
+        </div>
+      </div>
+      <button class="warning" onclick="cancelWithPassword()">密码取消水印</button>
+      <button onclick="restoreWatermark()">恢复水印</button>
+    </div>
+
+    <div class="test-section">
+      <h3>结果输出</h3>
+      <pre id="wm-result" class="result">点击按钮查看结果...</pre>
+    </div>
+  </div>
+
+  <!-- i18n 测试 -->
+  <div id="i18n" class="tab-content">
+    <div class="test-section">
+      <h3>初始化配置</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>默认语言</label>
+          <select id="i18n-defaultLang">
+            <option value="zh-CN">中文简体 (zh-CN)</option>
+            <option value="zh-TW">中文繁体 (zh-TW)</option>
+            <option value="en-US">English (en-US)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>当前语言</label>
+          <select id="i18n-currentLang">
+            <option value="zh-CN">中文简体 (zh-CN)</option>
+            <option value="zh-TW">中文繁体 (zh-TW)</option>
+            <option value="en-US">English (en-US)</option>
+          </select>
+        </div>
+        <div class="form-group checkbox-group">
+          <input type="checkbox" id="i18n-debug" checked>
+          <label>调试模式</label>
+        </div>
+      </div>
+      <button onclick="initI18n()">初始化 i18n</button>
+      <button class="danger" onclick="resetI18n()">重置</button>
+    </div>
+
+    <div class="test-section">
+      <h3>语言切换</h3>
+      <button onclick="changeLang('zh-CN')">中文简体</button>
+      <button onclick="changeLang('zh-TW')">中文繁体</button>
+      <button onclick="changeLang('en-US')">English</button>
+      <button onclick="changeLang('ja')">日本語</button>
+      <button onclick="changeLang('invalid')">无效语言</button>
+      <div style="margin-top: 10px;">
+        <span class="i18n-badge" id="badge-zh-CN">zh-CN</span>
+        <span class="i18n-badge" id="badge-zh-TW">zh-TW</span>
+        <span class="i18n-badge" id="badge-en-US">en-US</span>
+        <span class="i18n-badge" id="badge-ja">ja</span>
+      </div>
+    </div>
+
+    <div class="test-section">
+      <h3>翻译测试</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>翻译 Key</label>
+          <input type="text" id="i18n-key" value="hello" style="width: 200px;">
+        </div>
+        <div class="form-group">
+          <label>变量 (JSON格式)</label>
+          <input type="text" id="i18n-vars" value='{"name": "张三"}' style="width: 250px;">
+        </div>
+      </div>
+      <button onclick="testT()">翻译</button>
+      <button onclick="getCurrentLang()">当前语言</button>
+      <button onclick="getLoadedLangs()">已加载语言</button>
+    </div>
+
+    <div class="test-section">
+      <h3>扩展语言包</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>语言</label>
+          <input type="text" id="extend-lang" value="zh-CN">
+        </div>
+        <div class="form-group">
+          <label>Key</label>
+          <input type="text" id="extend-key" value="testKey">
+        </div>
+        <div class="form-group">
+          <label>Value</label>
+          <input type="text" id="extend-value" value="测试值">
+        </div>
+      </div>
+      <button onclick="extendMessages()">扩展语言包</button>
+      <button onclick="refreshI18n()">刷新页面</button>
+    </div>
+
+    <div class="test-section">
+      <h3>页面元素翻译</h3>
+      <div class="i18n-test" style="margin: 10px 0;">
+        <span data-i18n="hello" data-i18n-prop="text">原文: hello</span>
+      </div>
+      <div class="i18n-test" style="margin: 10px 0;">
+        <input data-i18n="placeholder" data-i18n-prop="placeholder" placeholder="原文: placeholder" style="padding: 8px;">
+      </div>
+      <div class="i18n-test" style="margin: 10px 0;">
+        <span data-i18n="welcome" data-i18n-name="李四">原文: welcome - {name}</span>
+      </div>
+      <button onclick="replaceElementTest()">替换元素</button>
+    </div>
+
+    <div class="test-section">
+      <h3>结果输出</h3>
+      <pre id="i18n-result" class="result">点击按钮查看结果...</pre>
+    </div>
+  </div>
+
+  <!-- Utils 测试 -->
+  <div id="utils" class="tab-content">
+    <div class="test-section">
+      <h3>DOM 工具</h3>
+      <div id="dom-test" style="padding: 20px; background: #f5f5f5; margin: 10px 0; border-radius: 4px;">
+        测试元素
+      </div>
+      <button onclick="testQuery()">$ / $$</button>
+      <button onclick="testCreate()">create</button>
+      <button onclick="testAddClass()">addClass</button>
+      <button onclick="testRemoveClass()">removeClass</button>
+      <button onclick="testToggleClass()">toggleClass</button>
+      <button onclick="testHasClass()">hasClass</button>
+      <button onclick="testOn()">on</button>
+      <button onclick="testOff()">off</button>
+      <pre id="dom-result" class="result">点击按钮查看结果...</pre>
+    </div>
+
+    <div class="test-section">
+      <h3>Date 工具</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>日期输入</label>
+          <input type="date" id="date-input">
+        </div>
+        <div class="form-group">
+          <label>格式</label>
+          <select id="date-format">
+            <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+            <option value="YYYY-MM-DD HH:mm:ss">YYYY-MM-DD HH:mm:ss</option>
+            <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+            <option value="DD MMM YYYY">DD MMM YYYY</option>
+          </select>
+        </div>
+      </div>
+      <button onclick="testFormat()">format 格式化</button>
+      <button onclick="testParse()">parse 解析</button>
+      <button onclick="testAddDays()">addDays 加天</button>
+      <button onclick="testAddMonths()">addMonths 加月</button>
+      <button onclick="testAddYears()">addYears 加年</button>
+      <button onclick="testDiffDays()">diffDays 天数差</button>
+      <button onclick="testDiffMonths()">diffMonths 月数差</button>
+      <button onclick="testRelative()">relative 相对时间</button>
+      <pre id="date-result" class="result">点击按钮查看结果...</pre>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h3>控制台日志</h3>
+    <pre id="log"></pre>
+    <button onclick="clearLog()">清空日志</button>
+  </div>
+
+  <script>
+    // 全局变量
+    let wm = null;
+
+    // 初始化日期
+    document.getElementById('date-input').valueAsDate = new Date();
+
+    // Tab 切换
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById(tabId).classList.add('active');
+    }
+
+    // 日志
+    function log(...args) {
+      console.log(...args);
+      const msg = args.map(a => typeof a === 'object' ? JSON.stringify(a, null, 2) : a).join(' ');
+      document.getElementById('log').textContent += `[${new Date().toLocaleTimeString()}] ${msg}\n`;
+      document.getElementById('log').scrollTop = document.getElementById('log').scrollHeight;
+    }
+
+    function clearLog() {
+      document.getElementById('log').textContent = '';
+    }
+
+    function showResult(id, data) {
+      document.getElementById(id).textContent = typeof data === 'object' ? JSON.stringify(data, null, 2) : data;
+    }
+
+    // ========== Watermark ==========
+    function getWatermarkOptions() {
+      return {
+        content: document.getElementById('wm-content').value,
+        fontColor: document.getElementById('wm-fontColor').value,
+        globalAlpha: parseFloat(document.getElementById('wm-globalAlpha').value),
+        fontSize: document.getElementById('wm-fontSize').value,
+        width: parseInt(document.getElementById('wm-width').value),
+        height: parseInt(document.getElementById('wm-height').value),
+        rotate: parseInt(document.getElementById('wm-rotate').value),
+        fontFamily: document.getElementById('wm-fontFamily').value,
+        protect: document.getElementById('wm-protect').checked,
+        updateOnResize: document.getElementById('wm-updateOnResize').checked,
+        isCheckPrint: document.getElementById('wm-isCheckPrint').checked,
+        passwordVerifyUrl: document.getElementById('wm-passwordVerifyUrl').value,
+        zIndex: 9999
+      };
+    }
+
+    function createWatermark() {
+      const options = getWatermarkOptions();
+      log('创建水印配置:', options);
+
+      wm = new FlowToolkit.Watermark(options);
+      wm.create().then(() => {
+        log('水印创建成功');
+        showResult('wm-result', { success: true, isCreated: wm.isCreated() });
+      }).catch(err => {
+        log('水印创建失败:', err);
+        showResult('wm-result', { error: err.message });
+      });
+    }
+
+    function updateWatermark() {
+      if (!wm) return log('请先创建水印');
+      const options = getWatermarkOptions();
+      wm.reconfigure(options).then(() => {
+        log('水印更新成功');
+        showResult('wm-result', { updated: true });
+      });
+    }
+
+    function destroyWatermark() {
+      if (!wm) return log('请先创建水印');
+      wm.destroy();
+      log('水印已销毁');
+      showResult('wm-result', { destroyed: true });
+    }
+
+    function recoverWatermark() {
+      if (!wm) return log('请先创建水印');
+      wm.recover();
+      log('水印已恢复');
+    }
+
+    function getOptions() {
+      if (!wm) return log('请先创建水印');
+      const options = wm.getOptions();
+      log('水印配置:', options);
+      showResult('wm-result', options);
+    }
+
+    function getStatus() {
+      if (!wm) return log('请先创建水印');
+      const status = {
+        isCreated: wm.isCreated(),
+        isVerified: wm.isVerified()
+      };
+      log('水印状态:', status);
+      showResult('wm-result', status);
+    }
+
+    function cancelWithPassword() {
+      if (!wm) return log('请先创建水印');
+      wm.cancelWithPassword().then(result => {
+        log('密码验证结果:', result);
+      });
+    }
+
+    function restoreWatermark() {
+      if (!wm) return log('请先创建水印');
+      wm.restore();
+      log('水印已恢复');
+    }
+
+    // ========== i18n ==========
+    function initI18n() {
+      const defaultLang = document.getElementById('i18n-defaultLang').value;
+      const currentLang = document.getElementById('i18n-currentLang').value;
+      const debug = document.getElementById('i18n-debug').checked;
+
+      FlowToolkit.i18n.init({
+        defaultLang,
+        currentLang,
+        customMessages: {
+          'en': {
+            'hello': 'Hello',
+            'world': 'World',
+            'welcome': 'Welcome, {name}!',
+            'placeholder': 'Please enter text',
+            'testKey': 'Test Value'
+          },
+          'zh-CN': {
+            'hello': '你好',
+            'world': '世界',
+            'welcome': '欢迎, {name}!',
+            'placeholder': '请输入文字',
+            'testKey': '测试值'
+          },
+          'zh-TW': {
+            'hello': '你好',
+            'world': '世界',
+            'welcome': '歡迎, {name}!',
+            'placeholder': '請輸入文字',
+            'testKey': '測試值'
+          },
+          'ja': {
+            'hello': 'こんにちは',
+            'world': '世界',
+            'welcome': 'ようこそ、{name}さん！',
+            'placeholder': 'テキストを入力',
+            'testKey': 'テスト値'
+          }
+        },
+        debug
+      });
+
+      log('i18n 初始化完成', { defaultLang, currentLang });
+      showResult('i18n-result', { initialized: true, defaultLang, currentLang });
+      updateLangBadges();
+    }
+
+    function changeLang(lang) {
+      const result = FlowToolkit.i18n.changeLang(lang);
+      log('切换语言:', lang, '=>', result, '当前:', FlowToolkit.i18n.getCurrentLang());
+      showResult('i18n-result', { lang, success: result, currentLang: FlowToolkit.i18n.getCurrentLang() });
+      updateLangBadges();
+    }
+
+    function updateLangBadges() {
+      const currentLang = FlowToolkit.i18n.getCurrentLang();
+      document.querySelectorAll('.i18n-badge').forEach(badge => {
+        badge.classList.remove('active');
+        if (badge.id === 'badge-' + currentLang) {
+          badge.classList.add('active');
+        }
+      });
+    }
+
+    function testT() {
+      const key = document.getElementById('i18n-key').value;
+      let vars = {};
+      try {
+        vars = JSON.parse(document.getElementById('i18n-vars').value || '{}');
+      } catch(e) {}
+      const result = FlowToolkit.i18n.t(key, vars);
+      log('翻译:', key, vars, '=>', result);
+      showResult('i18n-result', { key, vars, result });
+    }
+
+    function getCurrentLang() {
+      const lang = FlowToolkit.i18n.getCurrentLang();
+      log('当前语言:', lang);
+      showResult('i18n-result', { currentLang: lang });
+    }
+
+    function getLoadedLangs() {
+      const langs = FlowToolkit.i18n.getLoadedLangs();
+      log('已加载语言:', langs);
+      showResult('i18n-result', { loadedLangs: langs });
+    }
+
+    function extendMessages() {
+      const lang = document.getElementById('extend-lang').value;
+      const key = document.getElementById('extend-key').value;
+      const value = document.getElementById('extend-value').value;
+      FlowToolkit.i18n.extendMessages(lang, { [key]: value });
+      log('扩展语言包:', lang, { [key]: value });
+      showResult('i18n-result', { extended: true, lang, key, value });
+    }
+
+    function refreshI18n() {
+      FlowToolkit.i18n.refresh();
+      log('刷新完成');
+      showResult('i18n-result', { refreshed: true });
+    }
+
+    function resetI18n() {
+      FlowToolkit.i18n.reset();
+      log('重置完成');
+      showResult('i18n-result', { reset: true });
+    }
+
+    function replaceElementTest() {
+      FlowToolkit.i18n.replaceElement('#dom-test');
+      log('替换元素完成');
+    }
+
+    // ========== Utils ==========
+    function testQuery() {
+      const $ = FlowToolkit.utils.dom.$;
+      const $$ = FlowToolkit.utils.dom.$$;
+      const el = $('body');
+      const els = $$('.test-section');
+      log('$ result:', el?.tagName);
+      log('$$ result count:', els?.length);
+      showResult('dom-result', { $: el?.tagName, '$$ count': els?.length });
+    }
+
+    function testCreate() {
+      const create = FlowToolkit.utils.dom.create;
+      const el = create('div');
+      el.textContent = '动态创建的元素';
+      el.id = 'dynamic-test';
+      document.body.appendChild(el);
+      log('创建元素:', el);
+      showResult('dom-result', { created: 'div', text: '动态创建的元素' });
+    }
+
+    function testAddClass() {
+      const addClass = FlowToolkit.utils.dom.addClass;
+      const el = document.getElementById('dom-test');
+      addClass(el, 'test-class-add');
+      log('添加类名: test-class-add');
+      showResult('dom-result', { addClass: 'test-class-add' });
+    }
+
+    function testRemoveClass() {
+      const removeClass = FlowToolkit.utils.dom.removeClass;
+      const el = document.getElementById('dom-test');
+      removeClass(el, 'test-class-add');
+      log('移除类名: test-class-add');
+      showResult('dom-result', { removeClass: 'test-class-add' });
+    }
+
+    function testToggleClass() {
+      const toggleClass = FlowToolkit.utils.dom.toggleClass;
+      const el = document.getElementById('dom-test');
+      toggleClass(el, 'toggle-test');
+      log('切换类名: toggle-test');
+      showResult('dom-result', { toggleClass: 'toggle-test' });
+    }
+
+    function testHasClass() {
+      const hasClass = FlowToolkit.utils.dom.hasClass;
+      const el = document.getElementById('dom-test');
+      const result = hasClass(el, 'toggle-test');
+      log('检查类名 toggle-test:', result);
+      showResult('dom-result', { hasClass: result });
+    }
+
+    function testOn() {
+      const on = FlowToolkit.utils.dom.on;
+      const el = document.getElementById('dom-test');
+      const handler = () => log('点击事件触发!');
+      on(el, 'click', handler);
+      log('绑定点击事件 - 点击测试元素');
+      showResult('dom-result', { eventBound: 'click' });
+    }
+
+    function testOff() {
+      const off = FlowToolkit.utils.dom.off;
+      log('解绑需要在绑定时保存handler');
+      showResult('dom-result', { off: '需要保存handler' });
+    }
+
+    function testFormat() {
+      const format = FlowToolkit.utils.date.format;
+      const d = new Date();
+      const fmt = document.getElementById('date-format').value;
+      const result = format(d, fmt);
+      log('格式化:', fmt, '=>', result);
+      showResult('date-result', { format: fmt, result });
+    }
+
+    function testParse() {
+      const parse = FlowToolkit.utils.date.parse;
+      const input = document.getElementById('date-input').value || '2024-01-01';
+      const result = parse(input);
+      log('解析:', input, '=>', result);
+      showResult('date-result', { input, result });
+    }
+
+    function testAddDays() {
+      const addDays = FlowToolkit.utils.date.addDays;
+      const d = new Date();
+      const result = addDays(d, 7);
+      log('加7天:', result);
+      showResult('date-result', { addDays: 7, result });
+    }
+
+    function testAddMonths() {
+      const addMonths = FlowToolkit.utils.date.addMonths;
+      const d = new Date();
+      const result = addMonths(d, 1);
+      log('加1月:', result);
+      showResult('date-result', { addMonths: 1, result });
+    }
+
+    function testAddYears() {
+      const addYears = FlowToolkit.utils.date.addYears;
+      const d = new Date();
+      const result = addYears(d, 1);
+      log('加1年:', result);
+      showResult('date-result', { addYears: 1, result });
+    }
+
+    function testDiffDays() {
+      const diffDays = FlowToolkit.utils.date.diffDays;
+      const date1 = new Date('2024-01-01');
+      const date2 = new Date('2024-01-15');
+      const result = diffDays(date1, date2);
+      log('天数差:', result);
+      showResult('date-result', { diffDays: result });
+    }
+
+    function testDiffMonths() {
+      const diffMonths = FlowToolkit.utils.date.diffMonths;
+      const date1 = new Date('2024-01-01');
+      const date2 = new Date('2024-03-01');
+      const result = diffMonths(date1, date2);
+      log('月数差:', result);
+      showResult('date-result', { diffMonths: result });
+    }
+
+    function testRelative() {
+      const relative = FlowToolkit.utils.date.relative;
+      const d = new Date(Date.now() - 3600000); // 1小时前
+      const result = relative(d);
+      log('相对时间:', result);
+      showResult('date-result', { relative: result });
+    }
+
+    // 页面加载完成
+    console.log('FlowToolkit:', FlowToolkit);
+    console.log('Watermark:', FlowToolkit?.Watermark);
+    console.log('i18n:', FlowToolkit?.i18n);
+    console.log('utils:', FlowToolkit?.utils);
+    log('FlowToolkit 加载完成');
+  </script>
+</body>
+</html>

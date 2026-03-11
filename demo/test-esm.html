@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>Test ESM</title>
+</head>
+<body>
+  <h1>Test FlowToolkit ESM</h1>
+  <script type="module">
+    import { Watermark, FlowToolkit } from '../dist/flowtoolkit.es.js';
+    console.log('Watermark:', Watermark);
+    console.log('FlowToolkit:', FlowToolkit);
+    console.log('FlowToolkit.Watermark:', FlowToolkit?.Watermark);
+    document.body.innerHTML += '<pre>Watermark: ' + Watermark + '</pre>';
+    document.body.innerHTML += '<pre>FlowToolkit.Watermark: ' + FlowToolkit?.Watermark + '</pre>';
+  </script>
+</body>
+</html>

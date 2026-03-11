@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FlowToolkit 文档</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+      color: #333;
+      background: #f5f5f5;
+    }
+    h1 {
+      color: #2563eb;
+      border-bottom: 2px solid #2563eb;
+      padding-bottom: 10px;
+    }
+    h2 {
+      color: #1e40af;
+      margin-top: 40px;
+      border-left: 4px solid #2563eb;
+      padding-left: 12px;
+    }
+    h3 { color: #1e3a8a; }
+    code {
+      background: #f1f5f9;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 0.9em;
+    }
+    pre {
+      background: #1e293b;
+      color: #e2e8f0;
+      padding: 16px;
+      border-radius: 8px;
+      overflow-x: auto;
+    }
+    pre code {
+      background: none;
+      padding: 0;
+      color: inherit;
+    }
+    .module-card {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .nav {
+      position: sticky;
+      top: 0;
+      background: #2563eb;
+      padding: 12px 20px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+    }
+    .nav a {
+      color: white;
+      margin-right: 20px;
+      text-decoration: none;
+    }
+    .nav a:hover { text-decoration: underline; }
+    .method {
+      background: #f8fafc;
+      border-left: 3px solid #10b981;
+      padding: 10px 15px;
+      margin: 10px 0;
+    }
+    .param {
+      color: #64748b;
+      font-size: 0.9em;
+    }
+  </style>
+</head>
+<body>
+  <div class="nav">
+    <a href="#watermark">Watermark</a>
+    <a href="#i18n">i18n</a>
+    <a href="#utils">Utils</a>
+  </div>
+
+  <h1>FlowToolkit 文档</h1>
+  <p>OA系统前端工具库 - 提供水印、多语言、工具函数等常用功能</p>
+  <p>版本: 2.0.0</p>
+
+  <hr>
+
+  <h2 id="watermark">Watermark 水印模块</h2>
+  <div class="module-card">
+    <h3>导入方式</h3>
+    <pre><code>import { Watermark } from 'flowtoolkit';</code></pre>
+
+    <h3>创建水印</h3>
+    <pre><code>const wm = new Watermark({
+  content: 'OA系统 机密文件',
+  color: 'rgba(0, 0, 0, 0.3)',
+  fontSize: 14,
+  angle: -30,
+  scale: 2,
+  protect: true,
+  password: '123456',
+  onSuccess: () => console.log('水印创建成功'),
+  onCancel: () => console.log('用户取消')
+});
+
+// 创建水印
+wm.create();</code></pre>
+
+    <h3>方法</h3>
+    <div class="method"><code>wm.create()</code> - 创建水印</div>
+    <div class="method"><code>wm.update({ content: '新内容' })</code> - 更新水印内容</div>
+    <div class="method"><code>wm.destroy()</code> - 销毁水印</div>
+    <div class="method"><code>wm.recover()</code> - 恢复水印</div>
+    <div class="method"><code>wm.getOptions()</code> - 获取当前配置</div>
+    <div class="method"><code>wm.isCreated()</code> - 检查是否已创建</div>
+    <div class="method"><code>wm.isVerified()</code> - 检查是否已验证密码</div>
+  </div>
+
+  <h2 id="i18n">i18n 国际化模块</h2>
+  <div class="module-card">
+    <h3>导入方式</h3>
+    <pre><code>import { i18n } from 'flowtoolkit';</code></pre>
+
+    <h3>初始化</h3>
+    <pre><code>i18n.init({
+  defaultLang: 'zh-CN',
+  currentLang: 'zh-CN',
+  customMessages: {
+    'en': { 'hello': 'Hello', 'world': 'World' },
+    'zh-CN': { 'hello': '你好', 'world': '世界' }
+  }
+});</code></pre>
+
+    <h3>方法</h3>
+    <div class="method"><code>i18n.t('key')</code> - 获取翻译 <span class="param">参数: key, variables?</span></div>
+    <div class="method"><code>i18n.changeLang('en')</code> - 切换语言 <span class="param">参数: lang</span></div>
+    <div class="method"><code>i18n.refresh()</code> - 刷新页面翻译</div>
+    <div class="method"><code>i18n.replaceElement(target)</code> - 替换单个元素 <span class="param">参数: selector | element</span></div>
+    <div class="method"><code>i18n.extendMessages('zh-CN', { 'key': 'value' })</code> - 扩展语言包</div>
+    <div class="method"><code>i18n.getCurrentLang()</code> - 获取当前语言</div>
+    <div class="method"><code>i18n.getLoadedLangs()</code> - 获取已加载语言列表</div>
+    <div class="method"><code>i18n.reset()</code> - 重置配置</div>
+
+    <h3>HTML 使用</h3>
+    <pre><code>&lt;!-- 文本替换 --&gt;
+&lt;span data-i18n="hello"&gt;你好&lt;/span&gt;
+
+&lt;!-- 指定替换属性 --&gt;
+&lt;input data-i18n="placeholder" data-i18n-prop="placeholder"&gt;
+
+&lt;!-- 带变量 --&gt;
+&lt;span data-i18n="welcome" data-i18n-name="张三"&gt;&lt;/span&gt;</code></pre>
+  </div>
+
+  <h2 id="utils">Utils 工具模块</h2>
+  <div class="module-card">
+    <h3>导入方式</h3>
+    <pre><code>// 导入整个 utils 对象
+import { utils } from 'flowtoolkit';
+
+// 或直接导入具体函数
+import { $, $$, format, addDays } from 'flowtoolkit';</code></pre>
+
+    <h3>DOM 工具 - utils.dom</h3>
+    <div class="method"><code>utils.dom.$('#id')</code> - querySelector</div>
+    <div class="method"><code>utils.dom.$$('.class')</code> - querySelectorAll</div>
+    <div class="method"><code>utils.dom.create('div')</code> - 创建元素</div>
+    <div class="method"><code>utils.dom.addClass(el, 'active')</code> - 添加类名</div>
+    <div class="method"><code>utils.dom.removeClass(el, 'active')</code> - 移除类名</div>
+    <div class="method"><code>utils.dom.toggleClass(el, 'active')</code> - 切换类名</div>
+    <div class="method"><code>utils.dom.hasClass(el, 'active')</code> - 检查类名</div>
+    <div class="method"><code>utils.dom.on(el, 'click', fn)</code> - 绑定事件</div>
+    <div class="method"><code>utils.dom.off(el, 'click', fn)</code> - 解绑事件</div>
+    <div class="method"><code>utils.dom.one(el, 'click', fn)</code> - 绑定一次性事件</div>
+
+    <h3>Date 工具 - utils.date</h3>
+    <div class="method"><code>utils.date.format(date, 'YYYY-MM-DD')</code> - 格式化日期</div>
+    <div class="method"><code>utils.date.parse('2024-01-01')</code> - 解析日期</div>
+    <div class="method"><code>utils.date.addDays(date, 5)</code> - 加天数</div>
+    <div class="method"><code>utils.date.addMonths(date, 1)</code> - 加月数</div>
+    <div class="method"><code>utils.date.addYears(date, 1)</code> - 加年数</div>
+    <div class="method"><code>utils.date.diffDays(date1, date2)</code> - 天数差</div>
+    <div class="method"><code>utils.date.diffMonths(date1, date2)</code> - 月数差</div>
+    <div class="method"><code>utils.date.relative(date)</code> - 相对时间 (如: 2小时前)</div>
+  </div>
+
+  <hr>
+  <footer style="text-align: center; color: #64748b; margin-top: 40px;">
+    <p>FlowToolkit v2.0.0</p>
+  </footer>
+</body>
+</html>
