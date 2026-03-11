@@ -12,6 +12,8 @@ import {
   replaceElement,
   t,
   extendMessages,
+  loadMessagesAsync,
+  setOnLangChange,
   getCurrentLang,
   getLoadedLangs,
   reset
@@ -33,6 +35,10 @@ const i18n = {
   t,
   // 扩展语言包
   extendMessages,
+  // 异步加载语言包
+  loadMessagesAsync,
+  // 设置语言切换钩子
+  setOnLangChange,
   // 获取当前语言
   getCurrentLang,
   // 获取已加载语言列表

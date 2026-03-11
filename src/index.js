@@ -22,7 +22,7 @@ import * as date from './modules/utils/date.js';
  */
 const FlowToolkit = {
   // 版本
-  version: '2.0.1',
+  version: '2.1.0',
 
   // Watermark 水印
   Watermark,

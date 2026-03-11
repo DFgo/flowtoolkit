@@ -19,6 +19,18 @@ class I18nClass {
   /** @type {Array} */
   #dataAttrSelector = [];
 
+  /** @type {Function|null} */
+  #debouncedReplaceAll = null;
+
+  /** @type {MutationObserver|null} */
+  #mutationObserver = null;
+
+  /** @type {Set<HTMLElement>} */
+  #cachedElements = new Set();
+
+  /** @type {Map<HTMLElement, string>} */
+  #elementKeyMap = new Map();
+
   /**
    * @param {Object} [options={}]
    */
@@ -29,6 +41,9 @@ class I18nClass {
       customMessages: {},
       missingPlaceholder: (key) => `{{${key}}}`,
       debug: false,
+      debounceDelay: 200,
+      watchDynamicElements: true,
+      onLangChange: null,
       replace: {
         attr: 'data-i18n',
         propTypes: ['text', 'html', 'input', 'title', 'placeholder', 'alt'],
@@ -39,6 +54,20 @@ class I18nClass {
     if (options) {
       this.#config = { ...this.#config, ...options };
     }
+  }
+
+  /**
+   * 防抖函数
+   * @param {Function} fn
+   * @param {number} delay
+   * @returns {Function}
+   */
+  #debounce(fn, delay) {
+    let timer = null;
+    return function (...args) {
+      clearTimeout(timer);
+      timer = setTimeout(() => fn.apply(this, args), delay);
+    };
   }
 
   /**
@@ -159,7 +188,6 @@ class I18nClass {
         el.textContent = translatedText;
         break;
       case 'html':
-        // 安全改进：默认使用转义，特殊标记才允许 HTML
         el.innerHTML = this.#escapeHtml(translatedText);
         break;
       case 'input':
@@ -171,6 +199,9 @@ class I18nClass {
         el.setAttribute(targetProp, translatedText);
         break;
     }
+
+    this.#cachedElements.add(el);
+    this.#elementKeyMap.set(el, i18nKey);
   }
 
   /**
@@ -181,6 +212,58 @@ class I18nClass {
     const elements = document.querySelectorAll(`[${attr}]`);
     elements.forEach((el) => this.#replaceElementText(el));
     this.#config.debug && console.log(`[I18n] 已替换 ${elements.length} 个元素的文本`);
+  }
+
+  /**
+   * 初始化 MutationObserver 监听动态元素
+   */
+  #initMutationObserver() {
+    if (!this.#config.watchDynamicElements) return;
+
+    this.#stopMutationObserver();
+
+    const attr = this.#config.replace.attr;
+    this.#mutationObserver = new MutationObserver((mutations) => {
+      const newElements = [];
+      mutations.forEach((mutation) => {
+        mutation.addedNodes.forEach((node) => {
+          if (node.nodeType === 1) {
+            if (node.hasAttribute && node.hasAttribute(attr)) {
+              newElements.push(node);
+            }
+            const childElements = node.querySelectorAll && node.querySelectorAll(`[${attr}]`);
+            if (childElements) {
+              childElements.forEach((el) => newElements.push(el));
+            }
+          }
+        });
+      });
+
+      if (newElements.length > 0) {
+        newElements.forEach((el) => {
+          if (!this.#cachedElements.has(el)) {
+            this.#replaceElementText(el);
+          }
+        });
+        this.#config.debug &&
+          console.log(`[I18n] 已处理 ${newElements.length} 个动态新增元素`);
+      }
+    });
+
+    this.#mutationObserver.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+  }
+
+  /**
+   * 停止 MutationObserver
+   */
+  #stopMutationObserver() {
+    if (this.#mutationObserver) {
+      this.#mutationObserver.disconnect();
+      this.#mutationObserver = null;
+    }
   }
 
   /**
@@ -252,10 +335,8 @@ class I18nClass {
    * @param {Object} [options={}]
    */
   init(options = {}) {
-    // 合并用户配置
     this.#config = { ...this.#config, ...options };
 
-    // 验证默认语言格式
     if (!this.#validateLangFormat(this.#config.defaultLang)) {
       console.error(
         `[I18n] 无效默认语言：${this.#config.defaultLang}，已切换为 zh-CN`
@@ -263,7 +344,6 @@ class I18nClass {
       this.#config.defaultLang = 'zh-CN';
     }
 
-    // 验证当前语言格式
     if (!this.#validateLangFormat(this.#config.currentLang)) {
       console.error(
         `[I18n] 无效当前语言：${this.#config.currentLang}，已切换为默认语言`
@@ -271,23 +351,26 @@ class I18nClass {
       this.#config.currentLang = this.#config.defaultLang;
     }
 
-    // 合并语言包
     this.#mergedMessages = this.#mergeMessages(
       DEFAULT_MESSAGES,
       this.#config.customMessages
     );
 
-    // 合并选择器配置
     this.#dataAttrSelector = [
       ...DEFAULT_DATA_ATTR_SELECTOR,
       ...(this.#config.dataAttrSelector || [])
     ];
 
-    // 添加 i18n 属性
+    this.#debouncedReplaceAll = this.#debounce(
+      () => this.#replaceAllElements(),
+      this.#config.debounceDelay
+    );
+
     this.#addI18nDataAttributes(this.#dataAttrSelector);
 
-    // 批量替换页面元素
     this.#replaceAllElements();
+
+    this.#initMutationObserver();
 
     this.#config.debug &&
       console.log(`[I18n] 初始化完成，当前语言：${this.#config.currentLang}`);
@@ -307,12 +390,20 @@ class I18nClass {
     if (!this.#mergedMessages[lang]) {
       console.warn(`[I18n] 语言包 ${lang} 不存在，已切换为默认语言`);
       this.#config.currentLang = this.#config.defaultLang;
-      this.#replaceAllElements();
+      this.#debouncedReplaceAll();
       return false;
     }
 
+    const oldLang = this.#config.currentLang;
     this.#config.currentLang = lang;
-    this.#replaceAllElements();
+    this.#debouncedReplaceAll();
+
+    if (this.#config.onLangChange && typeof this.#config.onLangChange === 'function') {
+      this.#config.onLangChange({
+        oldLang,
+        newLang: lang
+      });
+    }
 
     this.#config.debug && console.log(`[I18n] 语言切换成功：${lang}`);
     return true;
@@ -322,7 +413,7 @@ class I18nClass {
    * 手动刷新
    */
   refresh() {
-    this.#replaceAllElements();
+    this.#debouncedReplaceAll();
     this.#config.debug && console.log('[I18n] 手动刷新页面文本完成');
   }
 
@@ -386,6 +477,54 @@ class I18nClass {
   }
 
   /**
+   * 异步加载语言包
+   * @param {string} lang
+   * @param {Function|string} loader - 加载函数或URL
+   * @returns {Promise<boolean>}
+   */
+  async loadMessagesAsync(lang, loader) {
+    if (!this.#validateLangFormat(lang)) {
+      console.error(`[I18n] 无效语言格式：${lang}`);
+      return false;
+    }
+
+    try {
+      let messages;
+      if (typeof loader === 'function') {
+        messages = await loader(lang);
+      } else if (typeof loader === 'string') {
+        const response = await fetch(loader);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        messages = await response.json();
+      } else {
+        throw new Error('loader must be a function or string URL');
+      }
+
+      this.extendMessages(lang, messages);
+      this.#config.debug &&
+        console.log(`[I18n] 异步加载语言包成功：${lang}`);
+      return true;
+    } catch (error) {
+      console.error(`[I18n] 异步加载语言包失败：${lang}`, error);
+      return false;
+    }
+  }
+
+  /**
+   * 设置语言切换钩子
+   * @param {Function|null} callback
+   */
+  setOnLangChange(callback) {
+    if (callback === null || typeof callback === 'function') {
+      this.#config.onLangChange = callback;
+    } else {
+      console.error('[I18n] onLangChange 必须是函数或 null');
+    }
+  }
+
+  /**
    * 获取当前语言
    * @returns {string}
    */
@@ -405,12 +544,17 @@ class I18nClass {
    * 重置配置
    */
   reset() {
+    this.#stopMutationObserver();
+
     this.#config = {
       defaultLang: 'zh-CN',
       currentLang: 'zh-CN',
       customMessages: {},
       missingPlaceholder: (key) => `{{${key}}}`,
       debug: false,
+      debounceDelay: 200,
+      watchDynamicElements: true,
+      onLangChange: null,
       replace: {
         attr: 'data-i18n',
         propTypes: ['text', 'html', 'input', 'title', 'placeholder', 'alt'],
@@ -424,19 +568,16 @@ class I18nClass {
     );
 
     this.#dataAttrSelector = [...DEFAULT_DATA_ATTR_SELECTOR];
+    this.#cachedElements.clear();
+    this.#elementKeyMap.clear();
 
     this.#replaceAllElements();
     this.#config.debug && console.log('[I18n] 已重置为默认配置');
   }
 }
 
-// 单例实例
 let instance = null;
 
-/**
- * 获取 I18n 实例（单例）
- * @returns {I18nClass}
- */
 export const getInstance = () => {
   if (!instance) {
     instance = new I18nClass();
@@ -444,65 +585,33 @@ export const getInstance = () => {
   return instance;
 };
 
-/**
- * 初始化 I18n
- * @param {Object} [options]
- */
 export const init = (options) => {
   const i18n = getInstance();
   i18n.init(options);
   return i18n;
 };
 
-/**
- * 切换语言
- * @param {string} lang
- * @returns {boolean}
- */
 export const changeLang = (lang) => getInstance().changeLang(lang);
 
-/**
- * 手动刷新
- */
 export const refresh = () => getInstance().refresh();
 
-/**
- * 手动替换单个元素
- * @param {string|HTMLElement} target
- */
 export const replaceElement = (target) => getInstance().replaceElement(target);
 
-/**
- * 获取翻译
- * @param {string} key
- * @param {Object} [variables]
- * @returns {string}
- */
 export const t = (key, variables) => getInstance().t(key, variables);
 
-/**
- * 扩展语言包
- * @param {string} lang
- * @param {Object} messages
- */
 export const extendMessages = (lang, messages) =>
   getInstance().extendMessages(lang, messages);
 
-/**
- * 获取当前语言
- * @returns {string}
- */
+export const loadMessagesAsync = (lang, loader) =>
+  getInstance().loadMessagesAsync(lang, loader);
+
+export const setOnLangChange = (callback) =>
+  getInstance().setOnLangChange(callback);
+
 export const getCurrentLang = () => getInstance().getCurrentLang();
 
-/**
- * 获取已加载语言列表
- * @returns {string[]}
- */
 export const getLoadedLangs = () => getInstance().getLoadedLangs();
 
-/**
- * 重置配置
- */
 export const reset = () => getInstance().reset();
 
 export { I18nClass };

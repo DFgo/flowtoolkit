@@ -5,6 +5,39 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2026-03-11
+
+### 新增
+- **onLangChange 钩子**：语言切换后通知外部业务逻辑
+  - 初始化时可通过 `onLangChange` 选项配置
+  - 可通过 `setOnLangChange()` 动态设置
+  - 回调参数包含 `oldLang` 和 `newLang`
+
+- **防抖功能**：防止频繁调用 `refresh()`/`changeLang()`
+  - 默认延迟 200ms（可通过 `debounceDelay` 配置）
+  - 避免重复执行 DOM 替换
+
+- **异步加载语言包**：支持 `loadMessagesAsync()`
+  - 支持传入函数或 URL 字符串
+  - 使用 fetch 自动加载 JSON 格式语言包
+  - 返回 Promise<boolean>
+
+- **动态新增元素监听**：使用 MutationObserver
+  - 默认启用（可通过 `watchDynamicElements` 配置）
+  - 页面初始化后新增的带 `data-i18n` 属性的元素自动替换
+  - 智能跳过已缓存元素
+
+- **元素缓存**：优化 DOM 替换性能
+  - 使用 `Set` 缓存已处理元素
+  - 使用 `Map` 缓存元素与 key 的映射
+  - 避免重复处理相同元素
+
+### 改进
+- 新增配置选项：
+  - `debounceDelay`: 防抖延迟时间（默认 200ms）
+  - `watchDynamicElements`: 是否监听动态元素（默认 true）
+  - `onLangChange`: 语言切换回调函数
+
 ## [2.0.1] - 2026-03-11
 
 ### 修复
