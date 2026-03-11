@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FlowToolkit i18n 模块详细测试</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 20px;
+      max-width: 1400px;
+      margin: 0 auto;
+      background: #f0f2f5;
+      color: #333;
+    }
+    h1 { color: #2563eb; padding-bottom: 10px; margin-bottom: 20px; }
+    h2 { color: #1e40af; margin: 30px 0 15px; padding-left: 12px; border-left: 4px solid #2563eb; }
+    h3 { color: #334155; margin-bottom: 15px; font-size: 14px; }
+
+    .test-section {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .form-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .form-group label {
+      font-size: 12px;
+      color: #666;
+      font-weight: 500;
+    }
+
+    .form-group input, .form-group select {
+      padding: 8px 12px;
+      border: 1px solid #d9d9d9;
+      border-radius: 4px;
+      font-size: 14px;
+      min-width: 150px;
+    }
+
+    .form-group input:focus, .form-group select:focus {
+      outline: none;
+      border-color: #40a9ff;
+      box-shadow: 0 0 0 2px rgba(24,144,255,0.1);
+    }
+
+    .checkbox-group {
+      flex-direction: row !important;
+      align-items: center;
+      gap: 8px !important;
+    }
+
+    .checkbox-group input {
+      min-width: auto !important;
+      width: 18px;
+      height: 18px;
+    }
+
+    button {
+      background: #1890ff;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+      margin-right: 8px;
+      margin-bottom: 8px;
+    }
+
+    button:hover { background: #40a9ff; }
+    button:active { background: #096dd9; }
+
+    button.danger { background: #ff4d4f; }
+    button.danger:hover { background: #ff7875; }
+
+    button.success { background: #52c41a; }
+    button.success:hover { background: #73d13d; }
+
+    button.warning { background: #faad14; }
+    button.warning:hover { background: #ffc53d; }
+
+    button:disabled {
+      background: #d9d9d9;
+      cursor: not-allowed;
+    }
+
+    .result {
+      background: #f7f8fa;
+      border: 1px solid #e8e8e8;
+      padding: 12px;
+      border-radius: 4px;
+      margin-top: 15px;
+      font-family: 'Consolas', monospace;
+      font-size: 13px;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    #log {
+      max-height: 300px;
+      overflow-y: auto;
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 15px;
+      border-radius: 4px;
+      font-family: 'Consolas', monospace;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .tabs {
+      display: flex;
+      border-bottom: 2px solid #e8e8e8;
+      margin-bottom: 20px;
+    }
+
+    .tab {
+      padding: 10px 20px;
+      cursor: pointer;
+      border: none;
+      background: none;
+      font-size: 14px;
+      color: #666;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+    }
+
+    .tab.active {
+      color: #1890ff;
+      border-bottom-color: #1890ff;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .i18n-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-size: 12px;
+      margin-right: 5px;
+    }
+
+    .i18n-badge.active {
+      background: #1890ff;
+      color: white;
+    }
+
+    .demo-element {
+      padding: 10px;
+      margin: 5px 0;
+      background: #e6f7ff;
+      border: 1px solid #91d5ff;
+      border-radius: 4px;
+    }
+
+    .new-element {
+      padding: 10px;
+      margin: 5px 0;
+      background: #f6ffed;
+      border: 1px solid #b7eb8f;
+      border-radius: 4px;
+      animation: highlight 1s ease;
+    }
+
+    @keyframes highlight {
+      0% { background: #ffff00; }
+      100% { background: #f6ffed; }
+    }
+
+    .status-indicator {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 5px;
+    }
+
+    .status-indicator.success { background: #52c41a; }
+    .status-indicator.warning { background: #faad14; }
+    .status-indicator.error { background: #ff4d4f; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 15px 0;
+    }
+
+    table th, table td {
+      border: 1px solid #e8e8e8;
+      padding: 8px 12px;
+      text-align: left;
+    }
+
+    table th {
+      background: #fafafa;
+      font-weight: 500;
+    }
+
+    .code-block {
+      background: #f7f8fa;
+      border: 1px solid #e8e8e8;
+      padding: 12px;
+      border-radius: 4px;
+      font-family: 'Consolas', monospace;
+      font-size: 13px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>FlowToolkit i18n 模块详细测试</h1>
+  <p style="margin-bottom: 20px; color: #666;">测试版本：2.1.0 | 包含：onLangChange、防抖、异步加载、动态元素监听、缓存优化</p>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('basic')">基础功能</button>
+    <button class="tab" onclick="switchTab('onLangChange')">onLangChange 钩子</button>
+    <button class="tab" onclick="switchTab('debounce')">防抖功能</button>
+    <button class="tab" onclick="switchTab('async')">异步加载</button>
+    <button class="tab" onclick="switchTab('dynamic')">动态元素</button>
+    <button class="tab" onclick="switchTab('cache')">缓存优化</button>
+  </div>
+
+  <!-- 基础功能测试 -->
+  <div id="basic" class="tab-content active">
+    <div class="test-section">
+      <h3>初始化配置</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>默认语言</label>
+          <select id="i18n-defaultLang">
+            <option value="zh-CN">中文简体 (zh-CN)</option>
+            <option value="zh-TW">中文繁体 (zh-TW)</option>
+            <option value="en-US">English (en-US)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>当前语言</label>
+          <select id="i18n-currentLang">
+            <option value="zh-CN">中文简体 (zh-CN)</option>
+            <option value="zh-TW">中文繁体 (zh-TW)</option>
+            <option value="en-US">English (en-US)</option>
+          </select>
+        </div>
+        <div class="form-group checkbox-group">
+          <input type="checkbox" id="i18n-debug" checked>
+          <label>调试模式</label>
+        </div>
+        <div class="form-group checkbox-group">
+          <input type="checkbox" id="i18n-watchDynamic" checked>
+          <label>监听动态元素</label>
+        </div>
+        <div class="form-group">
+          <label>防抖延迟 (ms)</label>
+          <input type="number" id="i18n-debounceDelay" value="200" min="0" max="5000">
+        </div>
+      </div>
+      <button onclick="initI18n()">初始化 i18n</button>
+      <button class="danger" onclick="resetI18n()">重置</button>
+    </div>
+
+    <div class="test-section">
+      <h3>语言切换</h3>
+      <button onclick="changeLang('zh-CN')">中文简体</button>
+      <button onclick="changeLang('zh-TW')">中文繁体</button>
+      <button onclick="changeLang('en-US')">English</button>
+      <button onclick="changeLang('ja')">日本語</button>
+      <button onclick="changeLang('invalid')">无效语言</button>
+      <div style="margin-top: 10px;">
+        <span class="i18n-badge" id="badge-zh-CN">zh-CN</span>
+        <span class="i18n-badge" id="badge-zh-TW">zh-TW</span>
+        <span class="i18n-badge" id="badge-en-US">en-US</span>
+        <span class="i18n-badge" id="badge-ja">ja</span>
+      </div>
+    </div>
+
+    <div class="test-section">
+      <h3>翻译测试</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>翻译 Key</label>
+          <input type="text" id="i18n-key" value="hello" style="width: 200px;">
+        </div>
+        <div class="form-group">
+          <label>变量 (JSON格式)</label>
+          <input type="text" id="i18n-vars" value='{"name": "张三"}' style="width: 250px;">
+        </div>
+      </div>
+      <button onclick="testT()">翻译</button>
+      <button onclick="getCurrentLang()">当前语言</button>
+      <button onclick="getLoadedLangs()">已加载语言</button>
+    </div>
+
+    <div class="test-section">
+      <h3>扩展语言包</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>语言</label>
+          <input type="text" id="extend-lang" value="zh-CN">
+        </div>
+        <div class="form-group">
+          <label>Key</label>
+          <input type="text" id="extend-key" value="testKey">
+        </div>
+        <div class="form-group">
+          <label>Value</label>
+          <input type="text" id="extend-value" value="测试值">
+        </div>
+      </div>
+      <button onclick="extendMessages()">扩展语言包</button>
+      <button onclick="refreshI18n()">刷新页面</button>
+    </div>
+
+    <div class="test-section">
+      <h3>页面元素翻译（静态）</h3>
+      <div class="demo-element">
+        <span data-i18n="hello" data-i18n-prop="text">原文: hello</span>
+      </div>
+      <div class="demo-element">
+        <input data-i18n="placeholder" data-i18n-prop="placeholder" placeholder="原文: placeholder" style="padding: 8px;">
+      </div>
+      <div class="demo-element">
+        <span data-i18n="welcome" data-i18n-name="李四">原文: welcome - {name}</span>
+      </div>
+      <button onclick="replaceElementTest()">替换元素</button>
+    </div>
+
+    <div class="test-section">
+      <h3>结果输出</h3>
+      <pre id="basic-result" class="result">点击按钮查看结果...</pre>
+    </div>
+  </div>
+
+  <!-- onLangChange 钩子测试 -->
+  <div id="onLangChange" class="tab-content">
+    <div class="test-section">
+      <h3>onLangChange 钩子配置</h3>
+      <p style="margin-bottom: 15px; color: #666;">语言切换时自动触发回调，可用于通知外部业务逻辑</p>
+      <div class="form-row">
+        <div class="form-group checkbox-group">
+          <input type="checkbox" id="enable-onLangChange" checked>
+          <label>启用 onLangChange 钩子</label>
+        </div>
+      </div>
+      <button onclick="initWithOnLangChange()">初始化（带钩子）</button>
+      <button onclick="setOnLangChangeRuntime()">运行时设置钩子</button>
+      <button onclick="removeOnLangChange()">移除钩子</button>
+    </div>
+
+    <div class="test-section">
+      <h3>钩子触发记录</h3>
+      <p style="margin-bottom: 10px; color: #666;">切换语言后查看钩子触发记录：</p>
+      <div id="langChange-events" style="max-height: 200px; overflow-y: auto; background: #f7f8fa; padding: 10px; border-radius: 4px;">
+        暂无记录
+      </div>
+    </div>
+
+    <div class="test-section">
+      <h3>快速测试</h3>
+      <button onclick="quickLangChange('zh-CN')">切换到中文</button>
+      <button onclick="quickLangChange('en-US')">切换到英文</button>
+      <button onclick="clearLangChangeLog()">清空记录</button>
+    </div>
+
+    <div class="test-section">
+      <h3>使用示例代码</h3>
+      <div class="code-block">
+// 方式1：初始化时配置
+i18n.init({
+  currentLang: 'zh-CN',
+  onLangChange: ({ oldLang, newLang }) => {
+    console.log(`语言从 ${oldLang} 切换到 ${newLang}`);
+    // 通知其他模块
+    someModule.onLanguageChange(newLang);
+  }
+});
+
+// 方式2：运行时设置
+i18n.setOnLangChange(({ oldLang, newLang }) => {
+  // 处理语言切换
+});
+
+// 方式3：移除钩子
+i18n.setOnLangChange(null);
+      </div>
+    </div>
+  </div>
+
+  <!-- 防抖功能测试 -->
+  <div id="debounce" class="tab-content">
+    <div class="test-section">
+      <h3>防抖功能说明</h3>
+      <p style="margin-bottom: 15px; color: #666;">
+        频繁调用 refresh() 或 changeLang() 时，会防抖处理，避免重复执行 DOM 操作。<br>
+        默认延迟 200ms，可通过 debounceDelay 配置。
+      </p>
+      <div class="form-row">
+        <div class="form-group">
+          <label>防抖延迟 (ms)</label>
+          <input type="number" id="debounce-delay" value="500" min="0" max="5000">
+        </div>
+      </div>
+      <button onclick="initWithDebounce()">初始化（自定义防抖）</button>
+    </div>
+
+    <div class="test-section">
+      <h3>快速连续调用测试</h3>
+      <p style="margin-bottom: 10px; color: #666;">点击按钮后快速切换语言多次，观察控制台日志：</p>
+      <button onclick="rapidChangeLang()">快速切换 5 次</button>
+      <button onclick="rapidRefresh()">快速刷新 5 次</button>
+    </div>
+
+    <div class="test-section">
+      <h3>防抖执行日志</h3>
+      <pre id="debounce-log" class="result">等待测试...</pre>
+    </div>
+
+    <div class="test-section">
+      <h3>对比测试</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>场景</th>
+            <th>无防抖（预期）</th>
+            <th>有防抖（实际）</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>快速切换 5 次</td>
+            <td>执行 5 次 DOM 操作</td>
+            <td id="debounce-result">-</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 异步加载测试 -->
+  <div id="async" class="tab-content">
+    <div class="test-section">
+      <h3>异步加载语言包</h3>
+      <p style="margin-bottom: 15px; color: #666;">
+        支持从远程 URL 或通过函数加载语言包
+      </p>
+      <div class="form-row">
+        <div class="form-group">
+          <label>加载方式</label>
+          <select id="async-load-type">
+            <option value="url">从 URL 加载</option>
+            <option value="function">通过函数加载</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>语言</label>
+          <input type="text" id="async-lang" value="ja" style="width: 100px;">
+        </div>
+        <div class="form-group">
+          <label>URL 或函数</label>
+          <input type="text" id="async-loader" value="https://example.com/i18n/ja.json" style="width: 300px;">
+        </div>
+      </div>
+      <button onclick="loadAsyncDemo()">加载语言包（模拟）</button>
+      <button onclick="loadWithFunction()">通过函数加载</button>
+    </div>
+
+    <div class="test-section">
+      <h3>实际测试（使用模拟数据）</h3>
+      <button onclick="loadJapaneseDemo()">加载日语（模拟）</button>
+      <button onclick="loadKoreanDemo()">加载韩语（模拟）</button>
+      <button onclick="switchToLoaded()">切换到已加载语言</button>
+    </div>
+
+    <div class="test-section">
+      <h3>加载结果</h3>
+      <pre id="async-result" class="result">等待测试...</pre>
+    </div>
+
+    <div class="test-section">
+      <h3>使用示例代码</h3>
+      <div class="code-block">
+// 方式1：从 URL 加载
+await i18n.loadMessagesAsync('ja', 'https://example.com/i18n/ja.json');
+i18n.changeLang('ja');
+
+// 方式2：通过函数加载
+await i18n.loadMessagesAsync('fr', async (lang) => {
+  const response = await fetch(`/api/i18n/${lang}.json`);
+  return await response.json();
+});
+
+// 方式3：批量加载
+const languages = ['en', 'ja', 'ko'];
+await Promise.all(
+  languages.map(lang =>
+    i18n.loadMessagesAsync(lang, `/i18n/${lang}.json`)
+  )
+);
+      </div>
+    </div>
+  </div>
+
+  <!-- 动态元素测试 -->
+  <div id="dynamic" class="tab-content">
+    <div class="test-section">
+      <h3>动态新增元素监听</h3>
+      <p style="margin-bottom: 15px; color: #666;">
+        页面初始化后新增的带 data-i18n 属性的元素会自动翻译（需开启 watchDynamicElements）
+      </p>
+      <div class="form-row">
+        <div class="form-group checkbox-group">
+          <input type="checkbox" id="enable-watchDynamic" checked>
+          <label>启用动态监听</label>
+        </div>
+      </div>
+      <button onclick="initWithWatchDynamic()">初始化（可配置监听）</button>
+    </div>
+
+    <div class="test-section">
+      <h3>动态添加元素</h3>
+      <button onclick="addDynamicElement()">添加带 data-i18n 的元素</button>
+      <button onclick="addDynamicContainer()">添加容器（内含多个元素）</button>
+      <button onclick="clearDynamicElements()">清空动态元素</button>
+    </div>
+
+    <div class="test-section">
+      <h3>动态元素容器</h3>
+      <div id="dynamic-container" style="min-height: 100px; border: 1px dashed #d9d9d9; padding: 10px; border-radius: 4px;">
+        点击上方按钮添加动态元素...
+      </div>
+    </div>
+
+    <div class="test-section">
+      <h3>监听日志</h3>
+      <pre id="dynamic-log" class="result">等待测试...</pre>
+    </div>
+  </div>
+
+  <!-- 缓存优化测试 -->
+  <div id="cache" class="tab-content">
+    <div class="test-section">
+      <h3>元素缓存说明</h3>
+      <p style="margin-bottom: 15px; color: #666;">
+        已处理的元素会被缓存，避免重复处理。切换语言时只更新必要的元素。
+      </p>
+    </div>
+
+    <div class="test-section">
+      <h3>当前缓存状态</h3>
+      <button onclick="checkCacheStatus()">查看缓存状态</button>
+      <button onclick="clearCache()">清空缓存</button>
+    </div>
+
+    <div class="test-section">
+      <h3>缓存测试元素</h3>
+      <div id="cache-test-container">
+        <div class="demo-element" data-i18n="hello">hello</div>
+        <div class="demo-element" data-i18n="world">world</div>
+        <div class="demo-element" data-i18n="welcome">welcome</div>
+      </div>
+      <button onclick="addMoreCacheElements()">添加更多元素</button>
+      <button onclick="switchLangForCache()">切换语言测试缓存</button>
+    </div>
+
+    <div class="test-section">
+      <h3>缓存状态</h3>
+      <pre id="cache-result" class="result">等待测试...</pre>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h3>控制台日志</h3>
+    <pre id="log"></pre>
+    <button onclick="clearLog()">清空日志</button>
+  </div>
+
+  <script>
+    let i18nInstance = null;
+    let langChangeCount = 0;
+    let debounceCallCount = 0;
+    const originalLog = console.log;
+    const originalWarn = console.warn;
+
+    console.log = function(...args) {
+      const msg = args.map(a => typeof a === 'object' ? JSON.stringify(a, null, 2) : a).join(' ');
+      log(`[LOG] ${msg}`);
+      originalLog.apply(console, args);
+    };
+
+    console.warn = function(...args) {
+      const msg = args.map(a => typeof a === 'object' ? JSON.stringify(a, null, 2) : a).join(' ');
+      log(`[WARN] ${msg}`);
+      originalWarn.apply(console, args);
+    };
+
+    function log(msg) {
+      const logEl = document.getElementById('log');
+      logEl.textContent += `[${new Date().toLocaleTimeString()}] ${msg}\n`;
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    function clearLog() {
+      document.getElementById('log').textContent = '';
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById(tabId).classList.add('active');
+    }
+
+    function showResult(id, data) {
+      document.getElementById(id).textContent = typeof data === 'object' ? JSON.stringify(data, null, 2) : data;
+    }
+
+    // ========== 基础功能 ==========
+    function initI18n() {
+      const defaultLang = document.getElementById('i18n-defaultLang').value;
+      const currentLang = document.getElementById('i18n-currentLang').value;
+      const debug = document.getElementById('i18n-debug').checked;
+      const watchDynamic = document.getElementById('i18n-watchDynamic').checked;
+      const debounceDelay = parseInt(document.getElementById('i18n-debounceDelay').value);
+
+      i18nInstance = FlowToolkit.i18n.init({
+        defaultLang,
+        currentLang,
+        debug,
+        watchDynamicElements: watchDynamic,
+        debounceDelay,
+        customMessages: {
+          'zh-CN': {
+            'hello': '你好',
+            'world': '世界',
+            'welcome': '欢迎, {name}!',
+            'placeholder': '请输入文字',
+            'testKey': '测试值'
+          },
+          'zh-TW': {
+            'hello': '你好',
+            'world': '世界',
+            'welcome': '歡迎, {name}!',
+            'placeholder': '請輸入文字',
+            'testKey': '測試值'
+          },
+          'en-US': {
+            'hello': 'Hello',
+            'world': 'World',
+            'welcome': 'Welcome, {name}!',
+            'placeholder': 'Please enter text',
+            'testKey': 'Test Value'
+          }
+        }
+      });
+
+      log('i18n 初始化完成');
+      showResult('basic-result', { initialized: true, defaultLang, currentLang, watchDynamic, debounceDelay });
+      updateLangBadges();
+    }
+
+    function changeLang(lang) {
+      const result = i18nInstance.changeLang(lang);
+      log(`切换语言: ${lang} => ${result}`);
+      showResult('basic-result', { lang, success: result, currentLang: i18nInstance.getCurrentLang() });
+      updateLangBadges();
+    }
+
+    function updateLangBadges() {
+      const currentLang = i18nInstance.getCurrentLang();
+      document.querySelectorAll('.i18n-badge').forEach(badge => {
+        badge.classList.remove('active');
+        if (badge.id === 'badge-' + currentLang) {
+          badge.classList.add('active');
+        }
+      });
+    }
+
+    function testT() {
+      const key = document.getElementById('i18n-key').value;
+      let vars = {};
+      try {
+        vars = JSON.parse(document.getElementById('i18n-vars').value || '{}');
+      } catch(e) {}
+      const result = i18nInstance.t(key, vars);
+      log(`翻译: ${key} ${JSON.stringify(vars)} => ${result}`);
+      showResult('basic-result', { key, vars, result });
+    }
+
+    function getCurrentLang() {
+      const lang = i18nInstance.getCurrentLang();
+      log(`当前语言: ${lang}`);
+      showResult('basic-result', { currentLang: lang });
+    }
+
+    function getLoadedLangs() {
+      const langs = i18nInstance.getLoadedLangs();
+      log(`已加载语言: ${JSON.stringify(langs)}`);
+      showResult('basic-result', { loadedLangs: langs });
+    }
+
+    function extendMessages() {
+      const lang = document.getElementById('extend-lang').value;
+      const key = document.getElementById('extend-key').value;
+      const value = document.getElementById('extend-value').value;
+      i18nInstance.extendMessages(lang, { [key]: value });
+      log(`扩展语言包: ${lang} ${key} = ${value}`);
+      showResult('basic-result', { extended: true, lang, key, value });
+    }
+
+    function refreshI18n() {
+      i18nInstance.refresh();
+      log('刷新完成');
+      showResult('basic-result', { refreshed: true });
+    }
+
+    function replaceElementTest() {
+      i18nInstance.replaceElement('.demo-element');
+      log('替换元素完成');
+      showResult('basic-result', { replaced: true });
+    }
+
+    function resetI18n() {
+      i18nInstance.reset();
+      log('重置完成');
+      showResult('basic-result', { reset: true });
+    }
+
+    // ========== onLangChange 测试 ==========
+    function initWithOnLangChange() {
+      const enable = document.getElementById('enable-onLangChange').checked;
+
+      i18nInstance = FlowToolkit.i18n.init({
+        currentLang: 'zh-CN',
+        debug: true,
+        onLangChange: enable ? ({ oldLang, newLang }) => {
+          langChangeCount++;
+          const eventLog = document.getElementById('langChange-events');
+          eventLog.innerHTML += `<div>
+            <span class="status-indicator success"></span>
+            [${langChangeCount}] 语言切换: ${oldLang} → ${newLang}
+          </div>`;
+          eventLog.scrollTop = eventLog.scrollHeight;
+          log(`onLangChange 触发: ${oldLang} → ${newLang}`);
+        } : null
+      });
+
+      log('初始化完成（带 onLangChange 钩子）');
+    }
+
+    function setOnLangChangeRuntime() {
+      i18nInstance.setOnLangChange(({ oldLang, newLang }) => {
+        langChangeCount++;
+        const eventLog = document.getElementById('langChange-events');
+        eventLog.innerHTML += `<div>
+          <span class="status-indicator success"></span>
+          [${langChangeCount}] 运行时钩子: ${oldLang} → ${newLang}
+        </div>`;
+        eventLog.scrollTop = eventLog.scrollHeight;
+        log(`运行时 onLangChange: ${oldLang} → ${newLang}`);
+      });
+      log('已设置运行时钩子');
+    }
+
+    function removeOnLangChange() {
+      i18nInstance.setOnLangChange(null);
+      log('已移除钩子');
+    }
+
+    function quickLangChange(lang) {
+      i18nInstance.changeLang(lang);
+      updateLangBadges();
+    }
+
+    function clearLangChangeLog() {
+      langChangeCount = 0;
+      document.getElementById('langChange-events').innerHTML = '暂无记录';
+    }
+
+    // ========== 防抖测试 ==========
+    function initWithDebounce() {
+      const delay = parseInt(document.getElementById('debounce-delay').value);
+
+      i18nInstance = FlowToolkit.i18n.init({
+        currentLang: 'zh-CN',
+        debug: true,
+        debounceDelay: delay,
+        customMessages: {
+          'zh-CN': { 'hello': '你好' },
+          'en-US': { 'hello': 'Hello' }
+        }
+      });
+
+      log(`初始化完成，防抖延迟: ${delay}ms`);
+    }
+
+    function rapidChangeLang() {
+      debounceCallCount = 0;
+      const languages = ['zh-CN', 'en-US', 'zh-CN', 'en-US', 'zh-CN'];
+
+      languages.forEach((lang, index) => {
+        setTimeout(() => {
+          debounceCallCount++;
+          i18nInstance.changeLang(lang);
+          document.getElementById('debounce-log').textContent = `执行第 ${debounceCallCount} 次调用（实际只会触发1次DOM操作）`;
+        }, index * 100);
+      });
+    }
+
+    function rapidRefresh() {
+      debounceCallCount = 0;
+
+      for (let i = 0; i < 5; i++) {
+        setTimeout(() => {
+          debounceCallCount++;
+          i18nInstance.refresh();
+          document.getElementById('debounce-log').textContent = `执行第 ${debounceCallCount} 次调用（实际只会触发1次DOM操作）`;
+        }, i * 100);
+      }
+    }
+
+    // ========== 异步加载测试 ==========
+    function loadAsyncDemo() {
+      const loadType = document.getElementById('async-load-type').value;
+      const lang = document.getElementById('async-lang').value;
+      const loader = document.getElementById('async-loader').value;
+
+      if (loadType === 'url') {
+        showResult('async-result', `尝试从 URL 加载: ${loader}\n注意：这需要真实的服务器支持`);
+      } else {
+        showResult('async-result', `使用函数加载: ${loader}\n注意：这需要真实的函数支持`);
+      }
+    }
+
+    function loadJapaneseDemo() {
+      const mockMessages = {
+        'ja': {
+          'hello': 'こんにちは',
+          'world': '世界',
+          'welcome': 'ようこそ、{name}さん！',
+          'placeholder': 'テキストを入力',
+          'testKey': 'テスト値'
+        }
+      };
+
+      i18nInstance.loadMessagesAsync('ja', async () => {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        return mockMessages['ja'];
+      }).then(success => {
+        log(`日语加载${success ? '成功' : '失败'}`);
+        showResult('async-result', { lang: 'ja', success, messages: mockMessages['ja'] });
+      });
+    }
+
+    function loadKoreanDemo() {
+      const mockMessages = {
+        'ko': {
+          'hello': '안녕하세요',
+          'world': '세계',
+          'welcome': '환영합니다, {name}님!',
+          'placeholder': '텍스트 입력',
+          'testKey': '테스트 값'
+        }
+      };
+
+      i18nInstance.loadMessagesAsync('ko', async () => {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        return mockMessages['ko'];
+      }).then(success => {
+        log(`韩语加载${success ? '成功' : '失败'}`);
+        showResult('async-result', { lang: 'ko', success, messages: mockMessages['ko'] });
+      });
+    }
+
+    function switchToLoaded() {
+      const lang = document.getElementById('async-lang').value;
+      i18nInstance.changeLang(lang);
+    }
+
+    // ========== 动态元素测试 ==========
+    function initWithWatchDynamic() {
+      const enable = document.getElementById('enable-watchDynamic').checked;
+
+      i18nInstance = FlowToolkit.i18n.init({
+        currentLang: 'zh-CN',
+        debug: true,
+        watchDynamicElements: enable,
+        customMessages: {
+          'zh-CN': { 'dynamic-hello': '动态元素你好', 'new-element': '新元素' },
+          'en-US': { 'dynamic-hello': 'Dynamic Hello', 'new-element': 'New Element' }
+        }
+      });
+
+      log(`初始化完成，动态监听: ${enable ? '启用' : '禁用'}`);
+    }
+
+    function addDynamicElement() {
+      const container = document.getElementById('dynamic-container');
+      const el = document.createElement('div');
+      el.className = 'new-element';
+      el.setAttribute('data-i18n', 'dynamic-hello');
+      el.setAttribute('data-i18n-prop', 'text');
+      el.textContent = '（将自动翻译）';
+      container.appendChild(el);
+
+      document.getElementById('dynamic-log').textContent = '已添加动态元素，将自动翻译...';
+    }
+
+    function addDynamicContainer() {
+      const container = document.getElementById('dynamic-container');
+      const div = document.createElement('div');
+      div.innerHTML = `
+        <div class="new-element" data-i18n="hello">Hello</div>
+        <div class="new-element" data-i18n="world">World</div>
+        <div class="new-element" data-i18n="new-element">New Element</div>
+      `;
+      container.appendChild(div);
+
+      document.getElementById('dynamic-log').textContent = '已添加容器（内含3个元素），将自动翻译...';
+    }
+
+    function clearDynamicElements() {
+      document.getElementById('dynamic-container').innerHTML = '点击上方按钮添加动态元素...';
+    }
+
+    // ========== 缓存测试 ==========
+    function checkCacheStatus() {
+      showResult('cache-result', '缓存机制为内部实现，当前已处理的元素数量可通过 DOM 查询获取');
+      const allElements = document.querySelectorAll('[data-i18n]');
+      log(`当前页面带 data-i18n 属性的元素数量: ${allElements.length}`);
+    }
+
+    function clearCache() {
+      i18nInstance.reset();
+      log('已重置（清空缓存）');
+      showResult('cache-result', { action: 'reset' });
+    }
+
+    function addMoreCacheElements() {
+      const container = document.getElementById('cache-test-container');
+      for (let i = 0; i < 5; i++) {
+        const el = document.createElement('div');
+        el.className = 'demo-element';
+        el.setAttribute('data-i18n', 'testKey');
+        el.textContent = 'Test Key';
+        container.appendChild(el);
+      }
+      log('添加了5个测试元素');
+    }
+
+    function switchLangForCache() {
+      const current = i18nInstance.getCurrentLang();
+      const next = current === 'zh-CN' ? 'en-US' : 'zh-CN';
+      i18nInstance.changeLang(next);
+      log(`切换语言测试缓存: ${next}`);
+    }
+
+    // 页面加载完成
+    console.log('FlowToolkit i18n 测试页面加载完成');
+    console.log('Version:', FlowToolkit.version);
+  </script>
+</body>
+</html>
