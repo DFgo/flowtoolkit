@@ -323,7 +323,7 @@ class I18nClass {
    */
   refresh() {
     this.#replaceAllElements();
-    this.#config.debug && console.log(`[I18n] 手动刷新页面文本完成`);
+    this.#config.debug && console.log('[I18n] 手动刷新页面文本完成');
   }
 
   /**
@@ -341,7 +341,7 @@ class I18nClass {
     if (el) {
       this.#replaceElementText(el);
     } else {
-      this.#config.debug && console.warn(`[I18n] 未找到目标元素：`, target);
+      this.#config.debug && console.warn('[I18n] 未找到目标元素：', target);
     }
   }
 

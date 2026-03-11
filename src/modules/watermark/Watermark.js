@@ -51,23 +51,8 @@ export class Watermark {
    * @param {Partial<WatermarkOptions>} [options={}]
    */
   constructor(options = {}) {
-    // 合并配置，确保 parent 默认值为 document.body
-    this.#options = {
-      ...DEFAULT_CONFIG,
-      parent: document.body,
-      ...options
-    };
     this.#options = utils.deepMerge(DEFAULT_CONFIG, options);
     this.#options.parent = options.parent || document.body;
-  }
-
-  /**
-   * 合并默认配置
-   * @param {Partial<WatermarkOptions>} options
-   * @returns {WatermarkOptions}
-   */
-  #getDefaultOptions(options) {
-    return utils.deepMerge(DEFAULT_CONFIG, options);
   }
 
   /**
@@ -282,7 +267,7 @@ export class Watermark {
       this.#modalElement.remove();
     }
 
-    const { modalWidth, modalHeight, modalTitle } = this.#options;
+    const { modalWidth, modalTitle } = this.#options;
     const overlay = utils.createOverlay();
 
     const modal = document.createElement('div');

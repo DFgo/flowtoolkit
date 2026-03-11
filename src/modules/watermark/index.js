@@ -4,6 +4,7 @@
  * @description 页面文本水印模块，支持高清屏适配、防篡改保护、密码验证
  */
 
+import { Watermark } from './Watermark.js';
 export { Watermark } from './Watermark.js';
 export { DEFAULT_CONFIG } from './config.js';
 export * from './types.js';

@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.1] - 2026-03-11
+
+### 修复
+- **Watermark 模块**
+  - 移除构造函数中重复的配置合并代码
+  - 删除未使用的私有方法 `#getDefaultOptions`
+  - 移除未使用的变量 `modalHeight`
+
+- **Utils 模块**
+  - 修复 `addMonths` 函数的 JSDoc 注释格式错误
+  - 补充完整的日期工具函数导出（`startOfDay`、`endOfDay`、`isToday`、`isYesterday`、`isTomorrow`、`fromTimestamp`、`toTimestamp`）
+  - 更新使用示例注释
+
+- **配置文件**
+  - 修复 `package.json` 中缺失的仓库信息（`repository`、`bugs`、`homepage`）
+  - 修复 `lint` 脚本，移除不兼容的 `--ext` 选项
+  - 简化 `eslint.config.js` 配置，移除未安装的依赖
+  - 安装缺失的 `globals` 包
+
+- **Watermark 模块入口**
+  - 修复 `Watermark` 未定义的引用问题
+
+- **I18n 模块**
+  - 统一引号风格为单引号
+
+### 改进
+- 代码质量检查通过，0 错误，12 警告（警告为调试用 console 语句）
+
 ## [2.0.0] - 2024-03-11
 
 ### 新增

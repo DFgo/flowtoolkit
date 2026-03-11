@@ -61,8 +61,8 @@ export const addDays = (date, days) => {
 /**
  * 增加月份
  * @param {Date|number|string} date - 日期
- * @param {number}
- * @returns months - 月数 {Date}
+ * @param {number} months - 月数
+ * @returns {Date}
  */
 export const addMonths = (date, months) => {
   const d = date instanceof Date ? new Date(date) : new Date(date);

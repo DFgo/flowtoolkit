@@ -1,6 +1,6 @@
 {
   "name": "flowtoolkit",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "OA系统前端工具库 - 提供水印、多语言、工具函数等常用功能",
   "type": "module",
   "main": "dist/flowtoolkit.umd.js",
@@ -26,7 +26,7 @@
     "build:all": "npm run build && npm run build:browser",
     "build:watch": "vite build --watch",
     "preview": "vite preview",
-    "lint": "eslint src --ext .js",
+    "lint": "eslint src",
     "lint:fix": "eslint src --fix --quiet",
     "format": "prettier --write \"src/**/*.js\"",
     "format:check": "prettier --check \"src/**/*.js\"",
@@ -45,20 +45,21 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/DFgo/flowtoolkit.git"
   },
   "bugs": {
-    "url": ""
+    "url": "https://github.com/DFgo/flowtoolkit/issues"
   },
-  "homepage": "",
+  "homepage": "https://github.com/DFgo/flowtoolkit",
   "engines": {
     "node": ">=16.0.0",
     "npm": ">=8.0.0"
   },
   "devDependencies": {
-    "vite": "^5.4.0",
     "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "globals": "17.4.0",
     "prettier": "^3.3.0",
-    "eslint-config-prettier": "^9.1.0"
+    "vite": "^5.4.0"
   }
 }
